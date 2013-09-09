@@ -16,7 +16,7 @@ Handle<Value> DoFib(const Arguments& args)
     std::shared_ptr<int> num(new int(args[0]->Int32Value()));
     Async<int, int>::Run(
       num,
-      [] (Async<int, int>::Baton* baton) 
+      [] (Async<int, int>::Baton* baton) // DoWork lmabda
       {
         auto target = *baton->data;
         auto prev = 0;
@@ -29,7 +29,7 @@ Handle<Value> DoFib(const Arguments& args)
         }
         baton->result = std::shared_ptr<int>(new int(curr));
       },
-      [] (Handle<Function> callback, Async<int, int>::Baton* baton) 
+      [] (Handle<Function> callback, Async<int, int>::Baton* baton)  // AfterWork lambda
       {
         HandleScope scope;
 
