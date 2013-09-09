@@ -7,6 +7,8 @@ Node addon async helper. Use C++ lambdas to run async code in node.
 An async fibunacci implementation.
 
 ```C++
+#include "node-async.h"
+
 Handle<Value> DoFib(const Arguments& args) 
 {
   HandleScope scope;
