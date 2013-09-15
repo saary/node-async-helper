@@ -51,20 +51,20 @@ namespace NodeUtils
     }
 
     static void RunOnMain(
-      std::function<void ()> *func)
+      std::function<void ()> func)
     {
       static unsigned int uvMainThreadId = GetMainThreadId();
 
       if (uvMainThreadId == uv_thread_self()) 
       {
-        (*func)();
-        delete func;
+        func();
       }
       else
       {
+        std::function<void ()> *funcPtr = new std::function<void ()>(func);
         uv_async_t *async = new uv_async_t;
         uv_async_init(uv_default_loop(), async, AsyncCb);
-        async->data = func;
+        async->data = funcPtr;
         uv_async_send(async);
       }
     }

@@ -27,6 +27,16 @@ Handle<Value> DoFib(const Arguments& args)
                 }
 
                 baton->result = std::shared_ptr<int>(new int(curr));
+
+                Async::RunOnMain([curr] {
+                  HandleScope scope;
+
+                  auto console = Context::GetCurrent()->Global()->Get(String::New(L"console")).As<Object>();
+                  auto log = console->Get(String::NewSymbol("log")).As<Function>();
+                  Local<Value> argv[] = { String::New(L"Result is:"), Integer::New(curr)};
+
+                  log->Call(console, _countof(argv), argv);
+                });
             },
             [] (Handle<Function> callback, Async::Baton<int, int>* baton) 
             {
@@ -47,16 +57,6 @@ Handle<Value> DoFib(const Arguments& args)
             },
             args[1].As<Function>());
     }
-
-    Async::RunOnMain(new std::function<void ()>([] {
-      HandleScope scope;
-
-      auto console = Context::GetCurrent()->Global()->Get(String::New(L"console")).As<Object>();
-      auto log = console->Get(String::NewSymbol("log")).As<Function>();
-      Local<Value> argv[] = { String::New(L"Bazinq") };
-
-      log->Call(console, _countof(argv), argv);
-    }));
 
     return scope.Close(Undefined());
 }
