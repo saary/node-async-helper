@@ -29,8 +29,7 @@ Handle<Value> DoFib(const Arguments& args)
                 baton->result = std::shared_ptr<int>(new int(curr));
 
                 Async::RunOnMain([curr] {
-                  HandleScope scope;
-
+                  HandleScope scope;  
                   auto console = Context::GetCurrent()->Global()->Get(String::New(L"console")).As<Object>();
                   auto log = console->Get(String::NewSymbol("log")).As<Function>();
                   Local<Value> argv[] = { String::New(L"Result is:"), Integer::New(curr)};
@@ -38,7 +37,7 @@ Handle<Value> DoFib(const Arguments& args)
                   log->Call(console, _countof(argv), argv);
                 });
             },
-            [] (Handle<Function> callback, Async::Baton<int, int>* baton) 
+            [] (Async::Baton<int, int>* baton) 
             {
                 HandleScope scope;
 
@@ -46,13 +45,13 @@ Handle<Value> DoFib(const Arguments& args)
                 if (baton->error_code)
                 {
                     Local<Value> err = Exception::Error(String::New(baton->error_message.c_str()));
-                    Local<Value> argv[] = { err };
-                    callback->Call(Context::GetCurrent()->Global(), _countof(argv), argv);
+                    Persistent<Value> argv[] = { Persistent<Value>::New(err) };
+                    baton->setCallbackArgs(argv, _countof(argv));
                 }
                 else
                 {
-                    Local<Value> argv[] = { Local<Value>::New(Undefined()), Integer::New(*baton->result) };
-                    callback->Call(Context::GetCurrent()->Global(), _countof(argv), argv);
+                    Persistent<Value> argv[] = { Persistent<Value>::New(Undefined()), Persistent<Integer>::New(Integer::New(*baton->result)) };
+                    baton->setCallbackArgs(argv, _countof(argv));
                 }
             },
             args[1].As<Function>());
