@@ -46,12 +46,12 @@ Handle<Value> DoFib(const Arguments& args)
                 {
                     Local<Value> err = Exception::Error(String::New(baton->error_message.c_str()));
                     Persistent<Value> argv[] = { Persistent<Value>::New(err) };
-                    baton->setCallbackArgv(argv, _countof(argv));
+                    baton->setCallbackArgs(argv, _countof(argv));
                 }
                 else
                 {
                     Persistent<Value> argv[] = { Persistent<Value>::New(Undefined()), Persistent<Integer>::New(Integer::New(*baton->result)) };
-                    baton->setCallbackArgv(argv, _countof(argv));
+                    baton->setCallbackArgs(argv, _countof(argv));
                 }
             },
             args[1].As<Function>());
