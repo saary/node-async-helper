@@ -41,16 +41,15 @@ Handle<Value> DoFib(const Arguments& args)
             {
                 HandleScope scope;
 
-
                 if (baton->error_code)
                 {
                     Local<Value> err = Exception::Error(String::New(baton->error_message.c_str()));
-                    Persistent<Value> argv[] = { Persistent<Value>::New(err) };
+                    Handle<Value> argv[] = { err };
                     baton->setCallbackArgs(argv, _countof(argv));
                 }
                 else
                 {
-                    Persistent<Value> argv[] = { Persistent<Value>::New(Undefined()), Persistent<Integer>::New(Integer::New(*baton->result)) };
+                    Handle<Value> argv[] = { Undefined(), Integer::New(*baton->result) };
                     baton->setCallbackArgs(argv, _countof(argv));
                 }
             },
