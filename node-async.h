@@ -20,7 +20,7 @@ namespace NodeUtils
     struct Baton 
     {
       int error_code;
-      std::string error_message;
+      std::wstring error_message;
 
       // Custom data
       std::shared_ptr<TInput> data;
