@@ -9,14 +9,15 @@
 
 #include <node.h>
 #include <v8.h>
+#include "nan/nan.h"
 #include "node-async.h"
 
 using namespace v8;
 using namespace NodeUtils;
 
-Handle<Value> DoFib(const Arguments& args) 
+NAN_METHOD(DoFib)
 {
-    HandleScope scope;
+	NanScope();
 
     if (args.Length() > 0) 
     {
@@ -38,39 +39,40 @@ Handle<Value> DoFib(const Arguments& args)
                 baton->result = std::shared_ptr<int>(new int(curr));
 
                 Async::RunOnMain([curr] {
-                  HandleScope scope;  
-                  auto console = Context::GetCurrent()->Global()->Get(String::New(L"console")).As<Object>();
-                  auto log = console->Get(String::NewSymbol("log")).As<Function>();
-                  Local<Value> argv[] = { String::New(L"Result is:"), Integer::New(curr)};
+                  NanScope();
+
+                  auto console = NanGetCurrentContext()->Global()->Get(NanNew<String>("console")).As<Object>();
+                  auto log = console->Get(NanNew<String>("log")).As<Function>();
+                  Local<Value> argv[] = { NanNew<String>(L"Result is:"), NanNew<Integer>(curr)};
 
                   log->Call(console, _countof(argv), argv);
                 });
             },
             [] (Async::Baton<int, int>* baton) 
             {
-                HandleScope scope;
+                NanScope();
 
                 if (baton->error_code)
                 {
-                    Local<Value> err = Exception::Error(String::New(baton->error_message.c_str()));
+                    Local<Value> err = Exception::Error(NanNew<String>(baton->error_message.c_str()));
                     Handle<Value> argv[] = { err };
                     baton->setCallbackArgs(argv, _countof(argv));
                 }
                 else
                 {
-                    Handle<Value> argv[] = { Undefined(), Integer::New(*baton->result) };
+                    Handle<Value> argv[] = { NanUndefined(), NanNew<Integer>(*baton->result) };
                     baton->setCallbackArgs(argv, _countof(argv));
                 }
             },
             args[1].As<Function>());
     }
 
-    return scope.Close(Undefined());
+  NanReturnUndefined();
 }
 
 void init(Handle<Object> exports) {
-    exports->Set(String::NewSymbol("run"),
-        FunctionTemplate::New(DoFib)->GetFunction());
+    exports->Set(NanNew<String>("run"),
+        NanNew<FunctionTemplate>(DoFib)->GetFunction());
 }
 
 NODE_MODULE(fib, init)
