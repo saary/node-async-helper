@@ -3,6 +3,16 @@ node-async-helper
 
 Node addon async helper. Use C++ lambdas to run async code in node.
 
+#Dependencies:
+
+ nan - https://github.com/nodejs/nan
+ 
+ If not already installed, make sure to install by running:
+ 
+```
+npm install nan
+```
+
 #Example usage
 An async fibunacci implementation.
 

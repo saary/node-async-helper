@@ -9,19 +9,28 @@
 
 #include <node.h>
 #include <v8.h>
-#include "nan/nan.h"
+#include "nan.h"
 #include "node-async.h"
 
-using namespace v8;
+using Nan::New;
+using Nan::HandleScope;
+using Nan::Undefined;
+using v8::Integer;
+using v8::Function;
+using v8::FunctionTemplate;
+using v8::String;
+using v8::Exception;
+using v8::Object;
+
 using namespace NodeUtils;
 
 NAN_METHOD(DoFib)
 {
-	NanScope();
+	HandleScope scope;
 
-    if (args.Length() > 0) 
+    if (info.Length() > 0) 
     {
-        std::shared_ptr<int> num(new int(args[0]->Int32Value()));
+        std::shared_ptr<int> num(new int(info[0]->Int32Value()));
         Async::Run<int, int>(
             num,
             [] (Async::Baton<int, int>* baton) 
@@ -39,40 +48,38 @@ NAN_METHOD(DoFib)
                 baton->result = std::shared_ptr<int>(new int(curr));
 
                 Async::RunOnMain([curr] {
-                  NanScope();
+                  HandleScope scope;
 
-                  auto console = NanGetCurrentContext()->Global()->Get(NanNew<String>("console")).As<Object>();
-                  auto log = console->Get(NanNew<String>("log")).As<Function>();
-                  Local<Value> argv[] = { NanNew<String>(L"Result is:"), NanNew<Integer>(curr)};
+                  auto console = Nan::GetCurrentContext()->Global()->Get(New<String>("console").ToLocalChecked()).As<Object>();
+                  auto log = console->Get(New<String>("log").ToLocalChecked()).As<Function>();
+                  Local<Value> argv[] = { New<String>(L"Result is:").ToLocalChecked(), New<v8::Integer>(curr)};
 
                   log->Call(console, _countof(argv), argv);
                 });
             },
             [] (Async::Baton<int, int>* baton) 
             {
-                NanScope();
+                HandleScope scope;
 
                 if (baton->error_code)
                 {
-                    Local<Value> err = Exception::Error(NanNew<String>(baton->error_message.c_str()));
+                    Local<Value> err = Exception::Error(New<String>(baton->error_message.c_str()).ToLocalChecked());
                     Handle<Value> argv[] = { err };
                     baton->setCallbackArgs(argv, _countof(argv));
                 }
                 else
                 {
-                    Handle<Value> argv[] = { NanUndefined(), NanNew<Integer>(*baton->result) };
+                    Handle<Value> argv[] = { Undefined(), New<Integer>(*baton->result) };
                     baton->setCallbackArgs(argv, _countof(argv));
                 }
             },
-            args[1].As<Function>());
+            info[1].As<Function>());
     }
-
-  NanReturnUndefined();
 }
 
 void init(Handle<Object> exports) {
-    exports->Set(NanNew<String>("run"),
-        NanNew<FunctionTemplate>(DoFib)->GetFunction());
+    exports->Set(New<String>("run").ToLocalChecked(),
+        New<FunctionTemplate>(DoFib)->GetFunction());
 }
 
 NODE_MODULE(fib, init)

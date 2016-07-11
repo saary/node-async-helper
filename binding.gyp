@@ -7,7 +7,10 @@
           "TreatWChar_tAsBuiltInType": "false",
         },
       },
-      "sources": [ "fib.cc" ]
+      "sources": [ "fib.cc" ],
+      "include_dirs": [
+        "<!(node -e \"require('nan')\")"
+      ]
     }
   ]
 }
